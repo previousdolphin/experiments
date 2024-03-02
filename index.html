@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Drag & Drop Notepad</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .note {
+            background-color: #ffffe0; /* Default: Light yellow */
+            width: 200px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            cursor: move;
+        }
+        .note-header {
+            background-color: #e0e0e0;
+            padding: 5px;
+            cursor: move;
+        }
+        .note-content {
+            min-height: 100px;
+            resize: vertical; /* Allow resizing notes */
+        }
+        .color-picker {
+            display: none; /* Hide initially */
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            margin: 2px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+
+
+.note {
+    background-color: #ffffe0; /* Default: Light yellow */
+    width: 200px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /* Initial shadow */
+    position: absolute;
+    cursor: move;
+    border-radius: 10px; /* Add rounded corners */
+}
+
+/* To create a darker drop shadow effect */
+.note:hover {
+    box-shadow: 5px 5px 10px 1px rgba(0, 0, 0, 0.4);  /* More spread, darker */
+}
+    </style>
+</head>
+<body>
+    <h1>My Simple Notepad</h1>
+
+    <script>
+
+let notesData = [];
+
+function makeNoteDraggable(note) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const header = note.querySelector('.note-header');
+
+    header.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e.preventDefault();
+        // get initial mouse position
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e.preventDefault();
+        // calculate new position
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // update note's position
+        note.style.top = (note.offsetTop - pos2) + "px";
+        note.style.left = (note.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+function addNewNote() {
+    const note = document.createElement('div');
+    note.classList.add('note');
+    note.innerHTML = `
+        <div class="note-header">Drag Me</div>
+        <textarea class="note-content" contenteditable="true"></textarea>
+        <div class="color-picker">
+            <div class="color-swatch" style="background-color: #ffffe0"></div>
+            <div class="color-swatch" style="background-color: #ff0000"></div>
+            <div class="color-swatch" style="background-color: #00ff00"></div>
+            <div class="color-swatch" style="background-color: #0000ff"></div>
+        </div>
+    `;
+
+    document.body.appendChild(note);
+    makeNoteDraggable(note);
+
+    // Color Picker Functionality
+    note.querySelector('.note-header').addEventListener('click', () => {
+        note.querySelector('.color-picker').style.display = 'block';
+    });
+
+    note.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', () => {
+            note.style.backgroundColor = swatch.style.backgroundColor;
+            note.querySelector('.color-picker').style.display = 'none';
+        });
+    });
+
+    // Add to storage data
+    notesData.push({
+        left: note.style.left,
+        top: note.style.top,
+        content: note.querySelector('.note-content').value,
+        color: note.style.backgroundColor
+    });
+}
+
+function saveNotes() {
+    // Update notesData in case things were moved or edited
+    notesData = [];
+    document.querySelectorAll('.note').forEach(note => {
+        notesData.push({
+            left: note.style.left,
+            top: note.style.top,
+            content: note.querySelector('.note-content').value,
+            color: note.style.backgroundColor
+        });
+    });
+
+    const dataStr = "data:text/html;charset=utf-8," + encodeURIComponent(generateHTMLFromNotes());
+    const downloadLink = document.createElement('a');
+    downloadLink.href = dataStr;
+    downloadLink.download = 'mynotes.html';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
+</body>
+</html>
