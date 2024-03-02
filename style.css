@@ -1,0 +1,13 @@
+body {
+    background-color: #444; /* Dark background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Hide potential scrollbars */
+}
+
+#gameCanvas {
+    border: 2px solid white; /* Simple road border */
+}
